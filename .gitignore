@@ -1,6 +1,6 @@
 .env
-openclaw/config/
-openclaw/workspace/
+openclaw/config/*
+openclaw/workspace/*
 paperless/export/
 paperless/consume/
 node_modules/
