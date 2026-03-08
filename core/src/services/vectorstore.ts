@@ -67,7 +67,8 @@ export async function search(
     with_payload: true,
   });
 
-  return results.map((r) => ({
+  const points = Array.isArray(results) ? results : (results as { points: unknown[] }).points ?? [];
+  return (points as Array<{ payload: Record<string, unknown>; score: number }>).map((r) => ({
     text: (r.payload as any)?.text ?? '',
     paperlessId: (r.payload as any)?.paperless_id ?? 0,
     score: r.score ?? 0,

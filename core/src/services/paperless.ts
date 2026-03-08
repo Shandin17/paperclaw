@@ -13,7 +13,7 @@ export async function uploadDocument(
   fileName: string,
 ): Promise<string> {
   const form = new FormData();
-  form.append('document', new Blob([fileBuffer]), fileName);
+  form.append('document', new Blob([new Uint8Array(fileBuffer)]), fileName);
 
   const res = await fetch(`${base()}/api/documents/post_document/`, {
     method: 'POST',
