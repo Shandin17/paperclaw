@@ -1,4 +1,8 @@
-import 'dotenv/config';
+import { config as dotenv } from 'dotenv';
+import { resolve } from 'path';
+// Load .env from repo root (one level above core/)
+dotenv({ path: resolve(process.cwd(), '../.env') });
+dotenv({ path: resolve(process.cwd(), '.env') }); // fallback for Docker/VPS
 import { z } from 'zod';
 
 const envSchema = z.object({

@@ -36,8 +36,6 @@ services:
         condition: service_healthy
       paperless-redis:
         condition: service_healthy
-    ports:
-      - "127.0.0.1:8000:8000"
     volumes:
       - ./data/paperless/media:/usr/src/paperless/media
       - ./data/paperless/data:/usr/src/paperless/data
@@ -49,7 +47,7 @@ services:
       PAPERLESS_DBUSER: paperless
       PAPERLESS_DBPASS: ${POSTGRES_PASSWORD}
       PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
-      PAPERLESS_OCR_LANGUAGE: spa+eng+rus
+      PAPERLESS_OCR_LANGUAGE: spa+eng
       PAPERLESS_TIME_ZONE: Europe/Madrid
       PAPERLESS_URL: ${PAPERLESS_URL:-http://localhost:8000}
       PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER}
@@ -66,8 +64,6 @@ services:
   qdrant:
     image: qdrant/qdrant:latest
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:6333:6333"
     volumes:
       - ./data/qdrant:/qdrant/storage
     environment:
@@ -85,8 +81,6 @@ services:
     depends_on:
       - paperless
       - qdrant
-    ports:
-      - "127.0.0.1:8080:8080"
     environment:
       PAPERLESS_URL: http://paperless:8000
       PAPERLESS_TOKEN: ${PAPERLESS_TOKEN}
@@ -102,8 +96,6 @@ services:
     restart: unless-stopped
     depends_on:
       - paperclaw-core
-    ports:
-      - "127.0.0.1:18789:18789"
     volumes:
       - ./data/openclaw:/home/node/.openclaw
       - ./skills:/home/node/.openclaw/skills
