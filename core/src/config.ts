@@ -14,7 +14,7 @@ const envSchema = z.object({
   MODEL_FAST: z.string().default('claude-haiku-4-5-20251001'),
   MODEL_SMART: z.string().default('claude-sonnet-4-20250514'),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
-  PORT: z.coerce.number().default(8080),
+  PORT: z.coerce.number().default(8081),
 });
 
 export const config = envSchema.parse(process.env);
