@@ -101,5 +101,7 @@ services:
       - ./skills:/home/node/.openclaw/skills
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      PAPERCLAW_CORE_URL: http://paperclaw-core:8080
     mem_limit: 300m
     profiles: [full]
