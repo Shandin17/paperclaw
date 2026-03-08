@@ -1,0 +1,16 @@
+# Environment
+.env
+
+# Node
+node_modules/
+dist/
+
+# Data volumes (persistent, not in repo)
+data/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

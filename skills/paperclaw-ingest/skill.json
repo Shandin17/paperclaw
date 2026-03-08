@@ -1,0 +1,19 @@
+{
+  "name": "paperclaw-ingest",
+  "description": "Ingest a document into PaperClaw — uploads, OCRs, classifies, extracts fields, and embeds for search",
+  "version": "0.1.0",
+  "triggers": [
+    "ingest",
+    "upload document",
+    "save this",
+    "store this",
+    "add to paperless",
+    "guardar documento",
+    "guardar factura",
+    "guardar recibo"
+  ],
+  "input": {
+    "file": "optional file attachment",
+    "message": "optional instruction or context"
+  }
+}

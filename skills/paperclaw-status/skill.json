@@ -1,0 +1,17 @@
+{
+  "name": "paperclaw-status",
+  "description": "Check PaperClaw system status and upcoming tax deadlines",
+  "version": "0.1.0",
+  "triggers": [
+    "status",
+    "health check",
+    "upcoming deadlines",
+    "próximos plazos",
+    "tax deadlines",
+    "plazos fiscales",
+    "paperclaw status"
+  ],
+  "input": {
+    "days": "optional: number of days ahead to check (default 30)"
+  }
+}
