@@ -19,6 +19,7 @@ Paperless-ngx (storage/OCR) · Qdrant (vector search) · Fastify (API) · OpenCl
 ## VPS Deployment (Full Guide)
 
 ### Requirements
+
 - Ubuntu 24.04, 4GB RAM minimum
 - Anthropic API key
 - OpenAI API key
@@ -94,6 +95,7 @@ docker compose --profile infra exec paperless \
 ```
 
 Copy the token into `.env`:
+
 ```
 PAPERLESS_TOKEN=<paste here>
 ```
@@ -111,6 +113,7 @@ docker compose --profile full ps
 ```
 
 You should see all 6 containers running:
+
 - `paperclaw-paperless-1` (healthy)
 - `paperclaw-paperclaw-core-1` (up)
 - `paperclaw-openclaw-1` (healthy)
@@ -133,7 +136,16 @@ ssh -L 18789:127.0.0.1:18789 -L 18791:127.0.0.1:18791 paperclaw@your-vps-ip
 
 Open in browser: `http://localhost:18791/`
 
+if does not work:
+
+```bash
+docker compose exec openclaw node dist/index.js config set gateway.mode local
+docker compose exec openclaw node dist/index.js config set gateway.bind lan
+docker compose restart openclaw
+```
+
 In the UI:
+
 1. Add a **Telegram channel** with your bot token
 2. Set this **system prompt**:
 
@@ -190,10 +202,10 @@ cd core && npm install && npm run dev
 
 ## Docker Profiles
 
-| Profile | Services started |
-|---|---|
-| `infra` | postgres, redis, paperless, qdrant |
-| `full` | everything including paperclaw-core + openclaw |
+| Profile | Services started                               |
+| ------- | ---------------------------------------------- |
+| `infra` | postgres, redis, paperless, qdrant             |
+| `full`  | everything including paperclaw-core + openclaw |
 
 ```bash
 # Start infra only
@@ -215,12 +227,14 @@ sudo rm -rf data/
 ## Troubleshooting
 
 ### Permission errors (EACCES)
+
 ```bash
 sudo chown -R 1000:1000 ~/paperclaw/data/
 docker compose --profile full restart
 ```
 
 ### Port already in use
+
 ```bash
 sudo lsof -i :PORT
 # Or restart Docker:
@@ -228,10 +242,13 @@ sudo systemctl restart docker
 ```
 
 ### Services fail to start (port conflict between docker-compose.yml and override)
+
 Never define ports in both `docker-compose.yml` and `docker-compose.override.yml` for the same service. Ports live only in the override file for this project.
 
 ### OpenClaw out of memory
+
 Already set to `mem_limit: 1200m`. Check RAM with `free -h`.
 
 ### Core not reading .env
+
 `.env` must be in the **repo root** (same directory as `docker-compose.yml`), not inside `core/`.
