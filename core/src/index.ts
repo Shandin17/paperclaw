@@ -8,15 +8,7 @@ import { queryRoutes } from './routes/query.js';
 import { utilityRoutes } from './routes/health.js';
 
 async function main() {
-  const app = Fastify({
-    logger: {
-      level: 'info',
-      transport: {
-        target: 'pino-pretty',
-        options: { translateTime: 'HH:MM:ss', ignore: 'pid,hostname' },
-      },
-    },
-  });
+  const app = Fastify({ logger: true });
 
   // Multipart support for file uploads (max 50MB)
   await app.register(multipart, { limits: { fileSize: 50 * 1024 * 1024 } });
