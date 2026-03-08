@@ -73,7 +73,7 @@ services:
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_URL: ${PAPERLESS_URL:-http://localhost:8000}
-      PAPERLESS_OCR_LANGUAGE: spa+eng
+      PAPERLESS_OCR_LANGUAGE: spa+eng+rus
 
   # ── OpenClaw ─────────────────────────────────────────────────────────────────
   # First-run setup (one time only):
@@ -140,8 +140,8 @@ services:
 
   # ── Gestor ───────────────────────────────────────────────────────────────────
 
-  gestor:
-    build: ./gestor
+  universal-router:
+    build: ./universal-router
     restart: unless-stopped
     depends_on:
       postgres:
@@ -153,7 +153,7 @@ services:
       openclaw-gateway:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://gestor:${POSTGRES_PASSWORD}@postgres:5432/gestor
+      DATABASE_URL: postgresql://router:${POSTGRES_PASSWORD}@postgres:5432/router
       REDIS_URL: redis://redis:6379
       PAPERLESS_URL: http://paperless:8000
       PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
