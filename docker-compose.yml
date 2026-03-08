@@ -34,7 +34,7 @@ services:
       PAPERLESS_DBPASS: ${PAPERLESS_DBPASS:-changeme}
       PAPERLESS_REDIS: redis://redis:6379
       PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY:-changeme-long-random-string}
-      PAPERLESS_OCR_LANGUAGE: spa+eng
+      PAPERLESS_OCR_LANGUAGE: spa+eng+rus
       PAPERLESS_TIME_ZONE: Europe/Madrid
     volumes:
       - ./data/paperless/data:/usr/src/paperless/data
