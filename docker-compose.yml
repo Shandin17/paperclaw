@@ -103,5 +103,6 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       PAPERCLAW_CORE_URL: http://paperclaw-core:8080
-    mem_limit: 300m
+      NODE_OPTIONS: --max-old-space-size=512
+    mem_limit: 600m
     profiles: [full]
