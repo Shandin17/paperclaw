@@ -1,0 +1,10 @@
+.env
+*.gpg
+data/
+node_modules/
+dist/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

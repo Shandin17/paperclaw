@@ -1,0 +1,6 @@
+{
+  "name": "paperclaw-ingest",
+  "description": "Process and store documents. Classifies receipts, invoices, medical reports, IDs and stores them with tags.",
+  "triggers": ["document", "receipt", "invoice", "factura", "recibo", "informe", "proceso"],
+  "file_handler": true
+}

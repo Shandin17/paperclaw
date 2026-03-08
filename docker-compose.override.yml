@@ -1,0 +1,11 @@
+# LOCAL DEV ONLY — do not deploy to VPS
+services:
+  paperless:
+    ports:
+      - "8000:8000"
+  qdrant:
+    ports:
+      - "6333:6333"
+  paperless-db:
+    ports:
+      - "5432:5432"

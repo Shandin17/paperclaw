@@ -1,0 +1,5 @@
+{
+  "name": "paperclaw-status",
+  "description": "Check tax deadlines, system health, and document statistics.",
+  "triggers": ["deadline", "status", "reminder", "plazo", "declaración", "health"]
+}
