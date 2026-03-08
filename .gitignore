@@ -1,6 +1,11 @@
 .env
 openclaw/config/*
-openclaw/workspace/*
+openclaw/workspace/MEMORY.md
+openclaw/workspace/USER.md
+openclaw/workspace/IDENTITY.md
+openclaw/workspace/TOOLS.md
+openclaw/workspace/BOOTSTRAP.md
+openclaw/workspace/memory/
 paperless/export/
 paperless/consume/
 node_modules/
