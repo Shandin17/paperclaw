@@ -33,6 +33,7 @@ TELEGRAM_BOT_TOKEN=your_bot_token
 ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 PAPERLESS_TOKEN=           # fill after step 4
+ALLOWED_CHAT_IDS=   # fill with your Telegram user ID to restrict access
 ```
 
 ### 3. Start infrastructure

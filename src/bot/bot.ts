@@ -28,6 +28,25 @@ export function createBot (
     await next()
   })
 
+  // Authorization middleware
+  const allowedIds = config.ALLOWED_CHAT_IDS
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(Number)
+
+  bot.use(async (ctx, next) => {
+    const id = ctx.chat?.id ?? ctx.from?.id
+    if (id !== undefined && allowedIds.includes(id)) {
+      await next()
+    } else if (id !== undefined) {
+      await ctx.reply(
+        `⛔ You are not authorized to use this bot.\n\nYour chat ID: \`${id}\`\n\nAsk the owner to add it.`,
+        { parse_mode: 'Markdown' }
+      )
+    }
+  })
+
   registerCommandHandlers(bot, registry)
 
   const handleMessage = createMessageHandler(runner, registry, tools, config)

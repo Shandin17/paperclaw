@@ -11,6 +11,7 @@ const schema = z.object({
   MAX_CALL_DEPTH: z.coerce.number().int().positive().default(6),
   TRACE_DIR: z.string().default('./data/traces'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
+  ALLOWED_CHAT_IDS: z.string().min(1),
 })
 
 const parsed = schema.safeParse(process.env)
