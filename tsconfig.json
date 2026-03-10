@@ -9,6 +9,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,
     "lib": ["ES2022"],

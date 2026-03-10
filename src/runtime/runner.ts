@@ -1,5 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { AgentDefinition, AgentContext, AgentOutput, TraceNode } from './types.ts'
+import type {
+  AgentDefinition,
+  AgentContext,
+  AgentOutput,
+  TraceNode,
+} from './types.ts'
 import type { AgentRegistry } from './registry.ts'
 import { callLLM } from '../clients/anthropic.ts'
 import { finalizeNode } from '../tracing/trace.ts'
@@ -19,7 +24,10 @@ function maxTokensFor (model: string): number {
 }
 
 export class AgentRunner {
-  constructor (private registry: AgentRegistry) {}
+  private registry: AgentRegistry
+  constructor (registry: AgentRegistry) {
+    this.registry = registry
+  }
 
   async run (
     agentName: string,
@@ -41,7 +49,11 @@ export class AgentRunner {
       }
 
       // Post-LLM trigger: if agent signals triggerEmbedder, invoke embedder directly
-      if (output.result.triggerEmbedder === true && output.result.ocrText && output.result.documentId) {
+      if (
+        output.result.triggerEmbedder === true &&
+        output.result.ocrText &&
+        output.result.documentId
+      ) {
         try {
           await context.invoke('embedder', {
             text: output.result.ocrText,
@@ -56,7 +68,11 @@ export class AgentRunner {
         }
       }
 
-      finalizeNode(traceNode, JSON.stringify(output.result), traceNode.tokenUsage)
+      finalizeNode(
+        traceNode,
+        JSON.stringify(output.result),
+        traceNode.tokenUsage
+      )
       return output
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
@@ -74,15 +90,19 @@ export class AgentRunner {
     const { tools, traceNode } = context
 
     const allManifests = this.registry.manifests()
-    const system = buildSystemPrompt(systemPrompt, allManifests, manifest.tools)
+    const system = buildSystemPrompt(
+      systemPrompt,
+      allManifests,
+      manifest.tools
+    )
     const userContent = JSON.stringify(input)
 
-    const anthropicTools: Anthropic.Tool[] = manifest.tools.flatMap(name =>
+    const anthropicTools: Anthropic.Tool[] = manifest.tools.flatMap((name) =>
       getAnthropicToolDefs(name)
     )
 
     const messages: Anthropic.MessageParam[] = [
-      { role: 'user', content: userContent }
+      { role: 'user', content: userContent },
     ]
 
     let totalInputTokens = 0
@@ -105,7 +125,10 @@ export class AgentRunner {
       )
 
       if (toolUseBlocks.length === 0 || result.stopReason === 'end_turn') {
-        traceNode.tokenUsage = { input: totalInputTokens, output: totalOutputTokens }
+        traceNode.tokenUsage = {
+          input: totalInputTokens,
+          output: totalOutputTokens,
+        }
         const textBlock = result.content.find(
           (b): b is Anthropic.TextBlock => b.type === 'text'
         )
@@ -142,7 +165,10 @@ export class AgentRunner {
       messages.push({ role: 'user', content: toolResults })
     }
 
-    traceNode.tokenUsage = { input: totalInputTokens, output: totalOutputTokens }
+    traceNode.tokenUsage = {
+      input: totalInputTokens,
+      output: totalOutputTokens,
+    }
     return { result: { error: 'Max tool iterations reached' }, traceNode }
   }
 }
@@ -153,7 +179,7 @@ function buildSystemPrompt (
   agentTools: string[]
 ): string {
   const agentList = JSON.stringify(
-    allManifests.map(m => ({
+    allManifests.map((m) => ({
       name: m.name,
       description: m.description,
       triggers: m.triggers ?? [],
@@ -162,7 +188,8 @@ function buildSystemPrompt (
     2
   )
 
-  const toolList = agentTools.length > 0 ? `\nAvailable tools: ${agentTools.join(', ')}` : ''
+  const toolList =
+    agentTools.length > 0 ? `\nAvailable tools: ${agentTools.join(', ')}` : ''
 
   return `${skillMd}
 
@@ -203,7 +230,11 @@ const PAPERLESS_TOOLS: Anthropic.Tool[] = [
       properties: {
         filePath: { type: 'string', description: 'Local path to the file' },
         title: { type: 'string', description: 'Document title' },
-        tags: { type: 'array', items: { type: 'string' }, description: 'Tag names to apply' },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Tag names to apply',
+        },
         documentType: { type: 'string', description: 'Document type name' },
       },
       required: ['filePath'],
@@ -280,7 +311,10 @@ const QDRANT_TOOLS: Anthropic.Tool[] = [
       properties: {
         query: { type: 'string', description: 'Natural language search query' },
         limit: { type: 'integer', description: 'Max results', default: 5 },
-        documentType: { type: 'string', description: 'Optional filter by document type' },
+        documentType: {
+          type: 'string',
+          description: 'Optional filter by document type',
+        },
       },
       required: ['query'],
     },
@@ -293,7 +327,10 @@ const QDRANT_TOOLS: Anthropic.Tool[] = [
       properties: {
         documentId: { type: 'string' },
         text: { type: 'string', description: 'Full text to chunk and embed' },
-        metadata: { type: 'object', description: 'Additional metadata to store' },
+        metadata: {
+          type: 'object',
+          description: 'Additional metadata to store',
+        },
       },
       required: ['documentId', 'text'],
     },
