@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "linting-neostandard-eslint9": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "computedHash": "5b77cec67e9f735cef7286c4818189fcffbe6497b007f194026f829bfed1e6a1"
+    },
+    "node-best-practices": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "computedHash": "df62cf5e7b858418ff46177cdd0e4df981d3ff031c0884bf93c2a49aa35e20ac"
+    },
+    "typescript-magician": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "computedHash": "c2bdad6211d1b158617e2deef5616c98496a20a9f0da60a254215bf2cb3f0146"
+    }
+  }
+}

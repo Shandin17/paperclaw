@@ -1,0 +1,27 @@
+{
+  "name": "chatter",
+  "description": "Friendly conversational interface. Handles all user messages, maintains conversation context, and delegates complex tasks to the classifier.",
+  "triggers": ["greeting", "question", "casual message", "document reference"],
+  "model": "claude-haiku-4-5-20251001",
+  "tools": [],
+  "parallel": false,
+  "canInvoke": ["classifier"],
+  "trace": true,
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "message": { "type": "string" },
+      "history": { "type": "array" },
+      "files": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["message"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "reply": { "type": "string" },
+      "delegated": { "type": "boolean" }
+    },
+    "required": ["reply", "delegated"]
+  }
+}

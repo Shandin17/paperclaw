@@ -1,0 +1,31 @@
+{
+  "name": "searcher",
+  "description": "Searches and retrieves documents using semantic search (Qdrant) and full-text search (Paperless). Extracts specific data fields on request.",
+  "triggers": ["find", "search", "retrieve", "show", "what is my", "extract", "get my"],
+  "model": "claude-haiku-4-5-20251001",
+  "tools": ["qdrant", "paperless"],
+  "parallel": true,
+  "canInvoke": [],
+  "trace": true,
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "query": { "type": "string" },
+      "mode": {
+        "type": "string",
+        "enum": ["document", "data", "both"],
+        "description": "document=return doc list, data=extract structured data, both=list + extract"
+      }
+    },
+    "required": ["query"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "documents": { "type": "array" },
+      "answer": { "type": "string" },
+      "reply": { "type": "string" }
+    },
+    "required": ["reply"]
+  }
+}

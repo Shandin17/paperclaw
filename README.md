@@ -1,254 +1,121 @@
-# PaperClaw
+# Paperclaw
 
-Personal Document AI Assistant — Paperless-ngx + OpenClaw + Claude.
+An AI-powered personal document manager accessible through Telegram. Send documents to your private bot — it OCRs, classifies, and indexes them. Ask questions in plain language to retrieve data, search your archive, or fill forms using your stored documents.
 
-Send documents via Telegram → auto-classified, tagged, stored → query AI agents → get filled PDFs back.
+## Requirements
 
-## Agents
-
-- **Gestor** — Spain autónomo tax (IVA, IRPF, Modelo 303/130, expense tracking)
-- **Doctor** — Medical document analysis, medication tracking, specialist suggestions
-- **ID Docs** — Personal document storage, form auto-fill, expiry alerts
-
-## Stack
-
-Paperless-ngx (storage/OCR) · Qdrant (vector search) · Fastify (API) · OpenClaw (Telegram gateway) · Claude Haiku (classification) · Claude Sonnet (reasoning) · pdf-lib (form filling)
-
----
-
-## VPS Deployment (Full Guide)
-
-### Requirements
-
-- Ubuntu 24.04, 4GB RAM minimum
+- Node.js 24+
+- Docker & Docker Compose
+- Telegram bot token ([create via @BotFather](https://t.me/BotFather))
 - Anthropic API key
-- OpenAI API key
-- Telegram bot token (from @BotFather)
+- OpenAI API key (embeddings only)
 
----
+## Setup
 
-### 1. Create dedicated user & install Docker
-
-```bash
-sudo adduser paperclaw
-sudo usermod -aG docker paperclaw
-# If Docker not installed:
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker paperclaw
-# Log out and back in, then:
-su - paperclaw
-```
-
-### 2. Clone the repo
+### 1. Clone and install
 
 ```bash
-git clone git@github.com:you/paperclaw.git
+git clone <repo>
 cd paperclaw
+npm install
 ```
 
-### 3. Create .env
+### 2. Configure environment
 
 ```bash
 cp .env.example .env
-nano .env
 ```
+
+Edit `.env`:
 
 ```env
-POSTGRES_PASSWORD=<random 32 chars>
-PAPERLESS_SECRET_KEY=<random string>
-PAPERLESS_ADMIN_USER=admin
-PAPERLESS_ADMIN_PASSWORD=<secure password>
-ANTHROPIC_API_KEY=sk-ant-xxx
-OPENAI_API_KEY=sk-xxx
-TELEGRAM_BOT_TOKEN=<from @BotFather>
-PAPERLESS_TOKEN=     # leave empty for now
+TELEGRAM_BOT_TOKEN=your_bot_token
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+PAPERLESS_TOKEN=           # fill after step 4
+ALLOWED_CHAT_IDS=   # fill with your Telegram user ID to restrict access
 ```
 
-### 4. Fix data directory permissions
+### 3. Start infrastructure
 
 ```bash
-mkdir -p data
-sudo chown -R 1000:1000 data/
+docker compose up -d paperless-redis paperless qdrant
 ```
 
-> The containers run as uid 1000 internally. If you ever see `EACCES` errors, run this again.
+Wait ~30 seconds for Paperless to initialize.
 
-### 5. Start infrastructure
+### 4. Get the Paperless API token
 
 ```bash
-docker compose --profile infra up -d
+docker compose exec paperless python manage.py drf_create_token admin
 ```
 
-Wait ~60 seconds for Paperless to boot:
+Copy the token into `.env` as `PAPERLESS_TOKEN`.
+
+### 5. Run the bot
+
+**Production via Docker Compose:**
 
 ```bash
-docker compose --profile infra logs paperless -f
-# Wait for: "Listening on http://0.0.0.0:8000"
-# Ctrl+C to exit
+docker compose up -d
 ```
 
-### 6. Get Paperless API token
+**Development** (Node.js type stripping, hot-friendly):
 
 ```bash
-docker compose --profile infra exec paperless \
-  python manage.py drf_create_token admin
+npm run dev
 ```
 
-Copy the token into `.env`:
+## Commands
+
+| Command | Description |
+|---|---|
+| `/start` | Welcome message and usage guide |
+| `/list` | List all stored documents |
+| `/agents` | Show active AI agents |
+
+## Example interactions
 
 ```
-PAPERLESS_TOKEN=<paste here>
+You:  [sends passport photo]
+Bot:  ✅ Saved your passport. Tagged: identity, passport.
+
+You:  What's my passport number?
+Bot:  Passport series: 1234, number: 567890, issued: 2020-03-15
+
+You:  [sends blank form PDF] fill this
+Bot:  I filled 8 fields. Still need: INN, SNILS. Please provide them.
+
+You:  Find my lease contract
+Bot:  Found 1 document: "Lease Contract - Oak St Apt - 2023" (ID: 7)
 ```
 
-### 7. Build and start everything
+## Development
 
 ```bash
-docker compose --profile full up -d --build
+npm run typecheck    # type check without emitting
+npm run lint         # ESLint (neostandard)
+npm run lint:fix     # auto-fix lint issues
+npm run build        # compile to dist/ via tsc
 ```
 
-Verify all services are up:
+Trace files are written to `data/traces/YYYY-MM-DD/trace-<id>.json` for every request.
 
-```bash
-docker compose --profile full ps
-```
+## Environment variables
 
-You should see all 6 containers running:
+| Variable | Default | Description |
+|---|---|---|
+| `TELEGRAM_BOT_TOKEN` | — | Required. Bot token from @BotFather |
+| `ANTHROPIC_API_KEY` | — | Required. Anthropic API key |
+| `OPENAI_API_KEY` | — | Required. OpenAI API key (embeddings) |
+| `PAPERLESS_URL` | `http://paperless:8000` | Paperless-ngx base URL |
+| `PAPERLESS_TOKEN` | — | Required. Paperless API token |
+| `QDRANT_URL` | `http://qdrant:6333` | Qdrant base URL |
+| `QDRANT_COLLECTION` | `documents` | Qdrant collection name |
+| `MAX_CALL_DEPTH` | `6` | Max agent-to-agent recursion depth |
+| `TRACE_DIR` | `./data/traces` | Directory for trace JSON files |
+| `LOG_LEVEL` | `info` | Pino log level |
 
-- `paperclaw-paperless-1` (healthy)
-- `paperclaw-paperclaw-core-1` (up)
-- `paperclaw-openclaw-1` (healthy)
-- `paperclaw-qdrant-1` (up)
-- `paperclaw-paperless-db-1` (healthy)
-- `paperclaw-paperless-redis-1` (healthy)
+## Architecture
 
-```bash
-curl http://localhost:8080/health
-# {"status":"ok","service":"paperclaw-core",...}
-```
-
-### 8. Configure OpenClaw (Telegram)
-
-SSH tunnel from your **local machine**:
-
-```bash
-ssh -L 18789:127.0.0.1:18789 -L 18791:127.0.0.1:18791 paperclaw@your-vps-ip
-```
-
-Open in browser: `http://localhost:18791/`
-
-if does not work:
-
-```bash
-docker compose exec openclaw node dist/index.js config set gateway.mode local
-docker compose exec openclaw node dist/index.js config set gateway.bind lan
-docker compose restart openclaw
-```
-
-In the UI:
-
-1. Add a **Telegram channel** with your bot token
-2. Set this **system prompt**:
-
-```
-You are PaperClaw, an AI document assistant.
-
-When the user sends a file (photo, PDF, scan): call the paperclaw-ingest skill.
-When the user asks questions about documents, tax, medical, or ID: call the paperclaw-query skill.
-When the user asks about deadlines or system status: call the paperclaw-status skill.
-
-You handle:
-- Tax (Spain autónomo): IVA, IRPF, Modelo 303/130, receipts, invoices
-- Medical: prescriptions, lab results, medications
-- ID documents: NIE, DNI, passport, official form filling
-
-Answer in the language the user writes in.
-```
-
----
-
-## Subsequent Deploys
-
-```bash
-# On VPS as paperclaw user:
-cd ~/paperclaw
-git pull
-docker compose --profile full up -d --build paperclaw-core
-```
-
----
-
-## Local Development
-
-```bash
-cp .env.example .env
-# Fill in API keys
-
-# Start infrastructure (ports exposed via docker-compose.override.yml)
-docker compose --profile infra up -d
-# Paperless at http://localhost:8001
-# Qdrant at http://localhost:6333
-
-# Get Paperless token
-docker compose --profile infra exec paperless \
-  python manage.py drf_create_token admin
-# Add PAPERLESS_TOKEN to .env
-
-# Run core with hot reload
-cd core && npm install && npm run dev
-# API at http://localhost:8081
-```
-
----
-
-## Docker Profiles
-
-| Profile | Services started                               |
-| ------- | ---------------------------------------------- |
-| `infra` | postgres, redis, paperless, qdrant             |
-| `full`  | everything including paperclaw-core + openclaw |
-
-```bash
-# Start infra only
-docker compose --profile infra up -d
-
-# Start full stack
-docker compose --profile full up -d
-
-# Stop everything
-docker compose --profile full --profile infra down
-
-# Full reset (DESTROYS ALL DATA)
-docker compose --profile full --profile infra down -v --remove-orphans
-sudo rm -rf data/
-```
-
----
-
-## Troubleshooting
-
-### Permission errors (EACCES)
-
-```bash
-sudo chown -R 1000:1000 ~/paperclaw/data/
-docker compose --profile full restart
-```
-
-### Port already in use
-
-```bash
-sudo lsof -i :PORT
-# Or restart Docker:
-sudo systemctl restart docker
-```
-
-### Services fail to start (port conflict between docker-compose.yml and override)
-
-Never define ports in both `docker-compose.yml` and `docker-compose.override.yml` for the same service. Ports live only in the override file for this project.
-
-### OpenClaw out of memory
-
-Already set to `mem_limit: 1200m`. Check RAM with `free -h`.
-
-### Core not reading .env
-
-`.env` must be in the **repo root** (same directory as `docker-compose.yml`), not inside `core/`.
+See [`architecture.md`](./architecture.md) for the full design document.

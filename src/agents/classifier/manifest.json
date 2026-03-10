@@ -1,0 +1,28 @@
+{
+  "name": "classifier",
+  "description": "Routes tasks to the right specialist agents. Analyzes intent, selects agents, invokes them (in parallel when possible), and merges results into a single reply.",
+  "triggers": ["route", "classify", "dispatch"],
+  "model": "claude-sonnet-4-6",
+  "tools": [],
+  "parallel": false,
+  "canInvoke": ["indexer", "searcher", "form-filler"],
+  "trace": true,
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "task": { "type": "string" },
+      "message": { "type": "string" },
+      "history": { "type": "array" },
+      "files": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["task"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "reply": { "type": "string" },
+      "agents": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["reply"]
+  }
+}
