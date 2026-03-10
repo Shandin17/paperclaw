@@ -48,26 +48,6 @@ export class AgentRunner {
         output = await this.runDefault(agentDef, input, context)
       }
 
-      // Post-LLM trigger: if agent signals triggerEmbedder, invoke embedder directly
-      if (
-        output.result.triggerEmbedder === true &&
-        output.result.ocrText &&
-        output.result.documentId
-      ) {
-        try {
-          await context.invoke('embedder', {
-            text: output.result.ocrText,
-            documentId: String(output.result.documentId),
-            metadata: {
-              title: output.result.title,
-              documentType: output.result.documentType,
-            },
-          })
-        } catch (embedErr) {
-          logger.warn({ embedErr }, 'Embedder trigger failed (non-fatal)')
-        }
-      }
-
       finalizeNode(
         traceNode,
         JSON.stringify(output.result),
@@ -100,6 +80,13 @@ export class AgentRunner {
     const anthropicTools: Anthropic.Tool[] = manifest.tools.flatMap((name) =>
       getAnthropicToolDefs(name)
     )
+
+    // Add invoke_agent tool for agents that can call other agents
+    const canInvoke = manifest.canInvoke
+    if (canInvoke === 'any' || (Array.isArray(canInvoke) && canInvoke.length > 0)) {
+      const allowedAgents = canInvoke === 'any' ? this.registry.names() : canInvoke
+      anthropicTools.push(buildInvokeAgentTool(allowedAgents))
+    }
 
     const messages: Anthropic.MessageParam[] = [
       { role: 'user', content: userContent },
@@ -140,10 +127,22 @@ export class AgentRunner {
       const toolResults: Anthropic.ToolResultBlockParam[] = []
       for (const toolUse of toolUseBlocks) {
         try {
-          const toolResult = await tools.execute(
-            toolUse.name,
-            toolUse.input as Record<string, unknown>
-          )
+          let toolResult: unknown
+
+          if (toolUse.name === 'invoke_agent') {
+            const { agent, input: agentInput } = toolUse.input as {
+              agent: string
+              input: Record<string, unknown>
+            }
+            const agentOutput = await context.invoke(agent, agentInput)
+            toolResult = agentOutput.result
+          } else {
+            toolResult = await tools.execute(
+              toolUse.name,
+              toolUse.input as Record<string, unknown>
+            )
+          }
+
           toolResults.push({
             type: 'tool_result',
             tool_use_id: toolUse.id,
@@ -211,6 +210,30 @@ function parseJsonOrWrap (text: string): Record<string, unknown> {
     return JSON.parse(jsonStr) as Record<string, unknown>
   } catch {
     return { reply: text }
+  }
+}
+
+function buildInvokeAgentTool (allowedAgents: string[]): Anthropic.Tool {
+  return {
+    name: 'invoke_agent',
+    description:
+      'Delegate a task to a specialist agent and get back its result. ' +
+      `Allowed agents: ${allowedAgents.join(', ')}.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        agent: {
+          type: 'string',
+          enum: allowedAgents,
+          description: 'Name of the agent to invoke',
+        },
+        input: {
+          type: 'object',
+          description: 'Input payload for the agent',
+        },
+      },
+      required: ['agent', 'input'],
+    },
   }
 }
 

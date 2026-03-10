@@ -23,9 +23,7 @@
       "documentType": { "type": "string" },
       "title": { "type": "string" },
       "tags": { "type": "array", "items": { "type": "string" } },
-      "reply": { "type": "string" },
-      "triggerEmbedder": { "type": "boolean" },
-      "ocrText": { "type": "string" }
+      "reply": { "type": "string" }
     },
     "required": ["documentId", "reply"]
   }
