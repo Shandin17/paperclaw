@@ -1,0 +1,41 @@
+{
+  "name": "form-filler",
+  "description": "Analyzes a form image or PDF using vision, retrieves relevant personal data from stored documents, and returns field mappings. Identifies missing fields.",
+  "triggers": ["fill form", "fill this", "complete form", "fill out"],
+  "model": "claude-opus-4-6",
+  "tools": ["qdrant", "paperless"],
+  "parallel": false,
+  "canInvoke": ["searcher"],
+  "trace": true,
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "formFileUrl": { "type": "string", "description": "Local path to the form PDF or image" },
+      "mimeType": { "type": "string" },
+      "additionalData": {
+        "type": "object",
+        "description": "Extra data provided by user in follow-up (e.g. missing fields)"
+      }
+    },
+    "required": ["formFileUrl"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "fields": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fieldName": { "type": "string" },
+            "value": { "type": "string" },
+            "sourceDoc": { "type": "string" }
+          }
+        }
+      },
+      "missingFields": { "type": "array", "items": { "type": "string" } },
+      "reply": { "type": "string" }
+    },
+    "required": ["fields", "missingFields", "reply"]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "indexer",
+  "description": "Uploads documents to Paperless-ngx, waits for OCR, classifies the document type, tags it, then triggers the embedder to store vectors in Qdrant.",
+  "triggers": ["upload", "store", "index", "new document", "save file"],
+  "model": "claude-haiku-4-5-20251001",
+  "tools": ["paperless"],
+  "parallel": false,
+  "canInvoke": ["embedder"],
+  "trace": true,
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "fileUrl": { "type": "string", "description": "Local path to the file" },
+      "mimeType": { "type": "string" },
+      "caption": { "type": "string" }
+    },
+    "required": ["fileUrl"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "documentId": { "type": "integer" },
+      "documentType": { "type": "string" },
+      "title": { "type": "string" },
+      "tags": { "type": "array", "items": { "type": "string" } },
+      "reply": { "type": "string" },
+      "triggerEmbedder": { "type": "boolean" },
+      "ocrText": { "type": "string" }
+    },
+    "required": ["documentId", "reply"]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "embedder",
+  "description": "Chunks text and stores embeddings in Qdrant. Uses OpenAI text-embedding-3-small. Does not call an LLM.",
+  "model": "none",
+  "tools": [],
+  "parallel": true,
+  "canInvoke": [],
+  "trace": true,
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "text": { "type": "string" },
+      "documentId": { "type": "string" },
+      "metadata": { "type": "object" }
+    },
+    "required": ["text", "documentId"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "chunksStored": { "type": "integer" },
+      "dimensions": { "type": "integer" }
+    },
+    "required": ["chunksStored", "dimensions"]
+  }
+}

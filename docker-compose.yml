@@ -1,0 +1,63 @@
+version: "3.8"
+
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      paperless:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    env_file: .env
+    volumes:
+      - ./data/traces:/app/data/traces
+    networks:
+      - paperclaw
+
+  paperless-redis:
+    image: redis:7
+    restart: unless-stopped
+    networks:
+      - paperclaw
+
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless-redis
+    environment:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_URL: http://paperless:8000
+      PAPERLESS_ADMIN_USER: admin
+      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD:-changeme}
+      PAPERLESS_OCR_LANGUAGES: rus+eng
+      PAPERLESS_FILENAME_FORMAT: "{document_type}/{created_year}/{title}"
+    volumes:
+      - ./data/paperless/data:/usr/src/paperless/data
+      - ./data/paperless/media:/usr/src/paperless/media
+      - ./data/paperless/consume:/usr/src/paperless/consume
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - paperclaw
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - paperclaw
+
+networks:
+  paperclaw:
+    driver: bridge
