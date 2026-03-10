@@ -1,5 +1,0 @@
-{
-  "name": "paperclaw-query",
-  "description": "Ask your document agents questions. Handles tax, medical, and ID queries. Can fill PDF forms.",
-  "triggers": ["gestor", "doctor", "id_docs", "tax", "IVA", "IRPF", "medical", "medication", "form", "fill", "NIE", "DNI"]
-}
