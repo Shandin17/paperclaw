@@ -115,6 +115,7 @@ Trace files are written to `data/traces/YYYY-MM-DD/trace-<id>.json` for every re
 | `MAX_CALL_DEPTH` | `6` | Max agent-to-agent recursion depth |
 | `TRACE_DIR` | `./data/traces` | Directory for trace JSON files |
 | `LOG_LEVEL` | `info` | Pino log level |
+| `ALLOWED_CHAT_IDS` | — | Comma-separated Telegram user IDs allowed to interact with the bot (e.g. `123456789,987654321`) |
 
 ## Architecture
 
