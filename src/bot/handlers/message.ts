@@ -11,6 +11,7 @@ import { createInvokeFn } from '../../runtime/invoker.ts'
 import { createRootNode, buildRequestTrace } from '../../tracing/trace.ts'
 import { saveTrace } from '../../tracing/store.ts'
 import { PaperlessClient } from '../../clients/paperless.ts'
+import { randomProcessingMessage } from '../processing-messages.ts'
 import { logger } from '../../utils/logger.ts'
 
 const paperless = new PaperlessClient()
@@ -36,10 +37,14 @@ export function createMessageHandler (
     const rootContext = { invoke, tools, traceNode: rootNode, config }
 
     try {
+      const processingMsg = await ctx.reply(randomProcessingMessage())
+
       const output = await runner.run('chatter', { message: text, history }, rootContext)
       const reply = String(output.result.reply ?? 'Sorry, something went wrong.')
 
-      await ctx.reply(reply, { parse_mode: 'Markdown' })
+      await ctx.api.editMessageText(chatId, processingMsg.message_id, reply, {
+        parse_mode: 'Markdown',
+      })
 
       // Send original file if the agent requested it
       await maybeSendFile(ctx, output.result)

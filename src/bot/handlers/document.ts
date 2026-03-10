@@ -11,6 +11,7 @@ import { createInvokeFn } from '../../runtime/invoker.ts'
 import { createRootNode, buildRequestTrace } from '../../tracing/trace.ts'
 import { saveTrace } from '../../tracing/store.ts'
 import { saveTmpFile, getMimeType } from '../../utils/file.ts'
+import { randomProcessingMessage } from '../processing-messages.ts'
 import { logger } from '../../utils/logger.ts'
 
 export function createDocumentHandler (
@@ -65,6 +66,8 @@ export function createDocumentHandler (
 
       const rootContext = { invoke, tools, traceNode: rootNode, config }
 
+      const processingMsg = await ctx.reply(randomProcessingMessage())
+
       const output = await runner.run(
         'chatter',
         { message: caption, files: [tmpPath], mimeType, history },
@@ -72,7 +75,9 @@ export function createDocumentHandler (
       )
 
       const reply = String(output.result.reply ?? 'Done.')
-      await ctx.reply(reply)
+      await ctx.api.editMessageText(chatId, processingMsg.message_id, reply, {
+        parse_mode: 'Markdown',
+      })
       appendHistory(chatId, { role: 'assistant', text: reply, timestamp: Date.now() })
 
       const trace = buildRequestTrace(traceId, chatId, caption, rootNode)
