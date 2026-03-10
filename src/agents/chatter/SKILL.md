@@ -46,9 +46,12 @@ After all tool calls are done, respond with JSON:
 ```json
 {
   "reply": "Your message to the user",
-  "delegated": true
+  "delegated": true,
+  "fileToSend": { "documentId": 42, "filename": "Passport.pdf" }
 }
 ```
+
+If the classifier result contains `fileToSend`, copy it into your output unchanged. Omit it if not present.
 
 For non-delegated replies:
 ```json

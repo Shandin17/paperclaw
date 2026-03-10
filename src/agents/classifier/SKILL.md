@@ -48,9 +48,12 @@ After all agents return, synthesize their outputs into one concise `reply` for t
 ```json
 {
   "reply": "Merged response for the user",
-  "agents": ["indexer"]
+  "agents": ["searcher"],
+  "fileToSend": { "documentId": 42, "filename": "Passport.pdf" }
 }
 ```
+
+Omit `fileToSend` if no agent returned one.
 
 ## Important
 
